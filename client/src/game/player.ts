@@ -1,4 +1,5 @@
 import Entity from "@blz/entity";
+import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
 import CircleCollider from "@blz/physics/collider/circle";
 import DistanceConstraint from "@blz/physics/constraints/distance";
@@ -20,21 +21,16 @@ export default class Player {
   rod: Entity;
   grapple: DistanceConstraint | undefined;
   grappleBoost = 20;
-  maxGrappleBoost = 60;
+  maxGrappleBoost = 50;
 
   color: string;
 
   constructor(color: string, controls = false) {
     this.color = color;
 
-    const ballCircle = new Circle(BALL_SIZE);
+    const ballCircle = new Rect(BALL_SIZE * 2, BALL_SIZE * 2);
     ballCircle.texture = this.getBallTexture();
-    this.ball = new Entity(
-      vec2.create(),
-      new CircleCollider(BALL_SIZE),
-      [ballCircle],
-      BALL_MASS
-    );
+    this.ball = new Entity(vec2.create(), new CircleCollider(BALL_SIZE), [ballCircle], BALL_MASS);
     this.ball.setZIndex(1);
     this.ball.airFriction = 0.05;
 
@@ -47,14 +43,9 @@ export default class Player {
     }
     this.trail.addEventListener("update", this.trailListener);
 
-    const anchorCircle = new Circle(BALL_SIZE / 2);
+    const anchorCircle = new Rect(BALL_SIZE, BALL_SIZE);
     anchorCircle.texture = this.getAnchorTexture();
-    this.anchor = new Entity(
-      vec2.create(),
-      new CircleCollider(0),
-      [anchorCircle],
-      0
-    );
+    this.anchor = new Entity(vec2.create(), new CircleCollider(0), [anchorCircle], 0);
     this.anchor.setZIndex(1);
 
     const rod = new Line(vec2.create(), vec2.create(), BALL_SIZE / 4);
@@ -115,11 +106,7 @@ export default class Player {
       if (dir === 0) dir = 1;
 
       const perp = cross2DWithScalar(vec2.create(), diff, dir);
-      vec2.scale(
-        perp,
-        perp,
-        Math.min(this.grappleBoost * Math.sqrt(dist), this.maxGrappleBoost)
-      );
+      vec2.scale(perp, perp, Math.min(this.grappleBoost * Math.sqrt(dist), this.maxGrappleBoost));
       this.ball.applyForce(perp);
 
       const line = <Line>this.rod.getPieces()[0];
