@@ -17,7 +17,7 @@ export default class Player {
   trailLength = 12;
 
   anchor: Entity;
-  rod: Entity | undefined;
+  rod: Entity;
   grapple: DistanceConstraint | undefined;
   grappleBoost = 20;
   maxGrappleBoost = 60;
@@ -29,13 +29,18 @@ export default class Player {
 
     const ballCircle = new Circle(BALL_SIZE);
     ballCircle.texture = this.getBallTexture();
-    this.ball = new Entity(vec2.create(), new CircleCollider(BALL_SIZE), [ballCircle], BALL_MASS);
+    this.ball = new Entity(
+      vec2.create(),
+      new CircleCollider(BALL_SIZE),
+      [ballCircle],
+      BALL_MASS
+    );
     this.ball.setZIndex(1);
     this.ball.airFriction = 0.05;
 
     this.trail = new Entity(vec2.create(), new CircleCollider(0));
     for (let i = 1; i <= this.trailLength; i++) {
-      let trailSize = BALL_SIZE * (1 - i * 0.05);
+      const trailSize = BALL_SIZE * (1 - i * 0.05);
       const circle = new Circle(trailSize);
       circle.texture = this.getTrailTexture();
       this.trail.addPiece(circle);
@@ -44,7 +49,12 @@ export default class Player {
 
     const anchorCircle = new Circle(BALL_SIZE / 2);
     anchorCircle.texture = this.getAnchorTexture();
-    this.anchor = new Entity(vec2.create(), new CircleCollider(0), [anchorCircle], 0);
+    this.anchor = new Entity(
+      vec2.create(),
+      new CircleCollider(0),
+      [anchorCircle],
+      0
+    );
     this.anchor.setZIndex(1);
 
     const rod = new Line(vec2.create(), vec2.create(), BALL_SIZE / 4);
@@ -105,7 +115,11 @@ export default class Player {
       if (dir === 0) dir = 1;
 
       const perp = cross2DWithScalar(vec2.create(), diff, dir);
-      vec2.scale(perp, perp, Math.min(this.grappleBoost * Math.sqrt(dist), this.maxGrappleBoost));
+      vec2.scale(
+        perp,
+        perp,
+        Math.min(this.grappleBoost * Math.sqrt(dist), this.maxGrappleBoost)
+      );
       this.ball.applyForce(perp);
 
       const line = <Line>this.rod.getPieces()[0];
