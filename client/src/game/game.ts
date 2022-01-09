@@ -134,10 +134,12 @@ export default class Game {
       const texSuffix = SMALL_TEXS ? "-small" : "";
 
       await Promise.all([
-        borderMiddle.loadImage("/assets/border-middle.png"),
-        borderCorner.loadImage("/assets/border-corner.png"),
-        ...Object.keys(balls).map((k) => balls[k].loadImage(`/assets/${k}-ball${texSuffix}.png`)),
-        ...Object.keys(anchors).map((k) => anchors[k].loadImage(`/assets/${k}-anchor${texSuffix}.png`)),
+        borderMiddle.loadImage("/assets/tiles/border-middle.png"),
+        borderCorner.loadImage("/assets/tiles/border-corner.png"),
+        ...Object.keys(balls).map((k) => balls[k].loadImage(`/assets/balls/${k}-ball${texSuffix}.png`)),
+        ...Object.keys(anchors).map((k) =>
+          anchors[k].loadImage(`/assets/anchors/${k}-anchor${texSuffix}.png`)
+        ),
       ]);
 
       ATLAS.refreshAtlas();

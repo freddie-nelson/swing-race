@@ -8,6 +8,10 @@
   padding: 0;
 }
 
+:root {
+  --img-scale: 2.75;
+}
+
 body,
 #app,
 main {
