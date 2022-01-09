@@ -4,10 +4,9 @@
       src="/assets/logo.png"
       alt="Swing Race Logo"
       class="
-        w-256
+        w-256px
         -mt-[calc(36px*var(--img-scale))]
         mb-16
-        [image-rendering:pixelated]
         select-none
         pointer-events-none
       "
@@ -17,14 +16,14 @@
       <s-image-button
         image="/assets/singleplayer-btn.png"
         hoverImage="/assets/singleplayer-btn-hover.png"
-        class="w-128 h-32 mr-10 transform hover:scale-110"
+        class="w-128px h-32px mr-10 transform hover:scale-110"
         @click="$router.push({ name: 'Singleplayer' })"
       />
 
       <s-image-button
         image="/assets/multiplayer-btn.png"
         hoverImage="/assets/multiplayer-btn-hover.png"
-        class="w-128 h-32 transform hover:scale-110"
+        class="w-128px h-32px transform hover:scale-110"
         @click="$router.push({ name: 'Multiplayer' })"
       />
     </div>
@@ -33,14 +32,14 @@
       <s-image-button
         image="/assets/map-editor-btn.png"
         hoverImage="/assets/map-editor-btn-hover.png"
-        class="w-128 h-32 mr-10 transform hover:scale-110"
-        @click="$router.push({ name: 'Leaderboard' })"
+        class="w-128px h-32px mr-10 transform hover:scale-110"
+        @click="$router.push({ name: 'MapEditor' })"
       />
 
       <s-image-button
         image="/assets/leaderboard-btn.png"
         hoverImage="/assets/leaderboard-btn-hover.png"
-        class="w-128 h-32 transform hover:scale-110"
+        class="w-128px h-32px transform hover:scale-110"
         @click="$router.push({ name: 'Leaderboard' })"
       />
     </div>
@@ -48,7 +47,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, onMounted, onUnmounted } from "vue";
+import Game from "@/game/game";
 
 import SImageButton from "@/components/app/SImageButton.vue";
 
@@ -57,5 +57,22 @@ export default defineComponent({
   components: {
     SImageButton,
   },
+  setup() {
+    onMounted(() => {
+      Game.show();
+
+      Game.canvas.element.style.position = "absolute";
+    });
+
+    onUnmounted(() => {
+      Game.canvas.element.style.position = "";
+    });
+  },
 });
 </script>
+
+<style scoped lang="scss">
+.gameCanvas {
+  position: absolute;
+}
+</style>

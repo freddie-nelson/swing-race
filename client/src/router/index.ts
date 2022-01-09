@@ -2,7 +2,10 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
 import Singleplayer from "../views/Singleplayer.vue";
 import Multiplayer from "../views/Multiplayer.vue";
+import MapEditor from "../views/MapEditor.vue";
 import Leaderboard from "../views/Leaderboard.vue";
+
+import Game from "@/game/game";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -21,6 +24,11 @@ const routes: Array<RouteRecordRaw> = [
     component: Multiplayer,
   },
   {
+    path: "/map-editor",
+    name: "MapEditor",
+    component: MapEditor,
+  },
+  {
     path: "/leaderboard",
     name: "Leaderboard",
     component: Leaderboard,
@@ -30,6 +38,10 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(() => {
+  Game.hide();
 });
 
 export default router;

@@ -6,25 +6,37 @@ import Texture from "@blz/texture/texture";
 import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import BatchRenderer from "@blz/renderer/batchRenderer";
+import EditorControls from "@blz/dropins/camera/editorControls";
 import { vec2 } from "gl-matrix";
 import Player from "./player";
+import Scene from "blaze-2d/lib/src/scene";
+import MapEditor from "./mapEditor";
 
 // setup globals
 declare global {
   var CANVAS: BlazeElement<HTMLCanvasElement>;
   var ATLAS: TextureAtlas;
   var TEXTURES: { [index: string]: Texture };
-  var WORLD: World;
-  var PHYSICS: Physics;
 
   var SMALL_TEXS: boolean;
   var CELL_SCALE: number;
 
-  var BALL_SIZE: number;
+  var BALL_RADIUS: number;
   var BALL_MASS: number;
+
+  var TILE_TYPES: string[];
+  var TILE_IMAGES: string[];
+
+  var TILE_SIZE: number;
+  var TILE_SLOP: number;
+  var TILE_MASS: number;
+  var TILE_ROTATION_INC: number;
 }
 
 export default abstract class Game {
+  static canvas: BlazeElement<HTMLCanvasElement>;
+  static cleanup: () => void;
+
   static init() {
     // setup blaze
     Blaze.init(<HTMLCanvasElement>document.querySelector("canvas"));
@@ -34,24 +46,28 @@ export default abstract class Game {
     globalThis.CANVAS = Blaze.getCanvas();
     globalThis.ATLAS = new TextureAtlas(4096);
     globalThis.TEXTURES = {};
-    globalThis.WORLD = Blaze.getScene().world;
-    globalThis.PHYSICS = Blaze.getScene().physics;
 
     globalThis.SMALL_TEXS = true;
-    globalThis.CELL_SCALE = 1;
+    globalThis.CELL_SCALE = 2;
 
-    globalThis.BALL_SIZE = 0.6;
+    globalThis.BALL_RADIUS = 0.25;
     globalThis.BALL_MASS = 1;
+
+    globalThis.TILE_TYPES = ["borderMiddle", "borderCorner"];
+    globalThis.TILE_IMAGES = ["border-middle", "border-corner"];
+
+    globalThis.TILE_SIZE = 1;
+    globalThis.TILE_SLOP = 0.01;
+    globalThis.TILE_MASS = 0;
+    globalThis.TILE_ROTATION_INC = -Math.PI / 2;
+
+    this.canvas = Blaze.getCanvas();
 
     this.setup();
   }
 
   static setup() {
-    WORLD.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
-    WORLD.useBatchRenderer = true;
     BatchRenderer.atlas = ATLAS;
-
-    PHYSICS.setGravity(vec2.fromValues(0, -20));
 
     // load textures
     (async () => {
@@ -144,15 +160,43 @@ export default abstract class Game {
 
       ATLAS.refreshAtlas();
     })();
+  }
 
-    const player = new Player("blue", true);
+  static setupScene() {
+    const world = Blaze.getScene().world;
+    const physics = Blaze.getScene().physics;
+
+    world.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
+    world.useBatchRenderer = true;
+    physics.setGravity(vec2.fromValues(0, -20));
+  }
+
+  static loadMapEditor() {
+    if (!this.canvas) return;
+    this.unload();
+
+    return new MapEditor();
+  }
+
+  static unload() {
+    if (this.cleanup) this.cleanup();
+
+    Blaze.setScene(new Scene());
+  }
+
+  static worldToTilePos(world: vec2) {
+    const pos = vec2.clone(world);
+    pos[0] = Math.floor(pos[0] + TILE_SIZE / 2);
+    pos[1] = Math.floor(pos[1] + TILE_SIZE / 2);
+
+    return pos;
   }
 
   static hide() {
-    Blaze.getCanvas().element.style.display = "none";
+    if (this.canvas) this.canvas.element.style.display = "none";
   }
 
   static show() {
-    Blaze.getCanvas().element.style.display = "block";
+    if (this.canvas) this.canvas.element.style.display = "block";
   }
 }

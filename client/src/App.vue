@@ -1,7 +1,7 @@
 <template>
-  <canvas class="gameCanvas z-0"></canvas>
+  <canvas class="gameCanvas"></canvas>
 
-  <router-view />
+  <router-view class="bg-bg" />
 </template>
 
 <script lang="ts">
@@ -23,6 +23,7 @@ export default defineComponent({
 * {
   margin: 0;
   padding: 0;
+  image-rendering: pixelated;
 }
 
 :root {
@@ -36,11 +37,8 @@ main {
   min-height: 100vh;
 }
 
-.gameCanvas {
-  position: absolute;
-}
-
 img {
   z-index: 1;
+  user-select: none;
 }
 </style>

@@ -11,7 +11,6 @@
       bg-[url:var(--image)]
       hover:bg-[url:var(--hover-image)]
       bg-no-repeat bg-cover
-      [image-rendering:pixelated]
     "
   ></button>
 </template>
