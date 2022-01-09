@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
-import Game from "../views/Game.vue";
 import Singleplayer from "../views/Singleplayer.vue";
 import Multiplayer from "../views/Multiplayer.vue";
 import Leaderboard from "../views/Leaderboard.vue";
@@ -10,11 +9,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/",
     name: "Home",
     component: Home,
-  },
-  {
-    path: "/game",
-    name: "Game",
-    component: Game,
   },
   {
     path: "/singleplayer",

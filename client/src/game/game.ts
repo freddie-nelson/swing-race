@@ -24,8 +24,8 @@ declare global {
   var BALL_MASS: number;
 }
 
-export default class Game {
-  constructor() {
+export default abstract class Game {
+  static init() {
     // setup blaze
     Blaze.init(<HTMLCanvasElement>document.querySelector("canvas"));
     Blaze.setBgColor(new Color("#202020"));
@@ -46,7 +46,7 @@ export default class Game {
     this.setup();
   }
 
-  setup() {
+  static setup() {
     WORLD.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
     WORLD.useBatchRenderer = true;
     BatchRenderer.atlas = ATLAS;
@@ -146,5 +146,13 @@ export default class Game {
     })();
 
     const player = new Player("blue", true);
+  }
+
+  static hide() {
+    Blaze.getCanvas().element.style.display = "none";
+  }
+
+  static show() {
+    Blaze.getCanvas().element.style.display = "block";
   }
 }

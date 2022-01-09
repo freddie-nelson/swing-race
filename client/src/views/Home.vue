@@ -1,5 +1,5 @@
 <template>
-  <main class="flex flex-col justify-center items-center bg-bg p-12">
+  <main class="flex flex-col justify-center items-center p-12">
     <img
       src="/assets/logo.png"
       alt="Swing Race Logo"
@@ -8,6 +8,8 @@
         -mt-[calc(36px*var(--img-scale))]
         mb-16
         [image-rendering:pixelated]
+        select-none
+        pointer-events-none
       "
     />
 
@@ -27,12 +29,21 @@
       />
     </div>
 
-    <s-image-button
-      image="/assets/leaderboard-btn.png"
-      hoverImage="/assets/leaderboard-btn-hover.png"
-      class="w-128 h-32 transform hover:scale-110"
-      @click="$router.push({ name: 'Leaderboard' })"
-    />
+    <div class="flex mb-10">
+      <s-image-button
+        image="/assets/map-editor-btn.png"
+        hoverImage="/assets/map-editor-btn-hover.png"
+        class="w-128 h-32 mr-10 transform hover:scale-110"
+        @click="$router.push({ name: 'Leaderboard' })"
+      />
+
+      <s-image-button
+        image="/assets/leaderboard-btn.png"
+        hoverImage="/assets/leaderboard-btn-hover.png"
+        class="w-128 h-32 transform hover:scale-110"
+        @click="$router.push({ name: 'Leaderboard' })"
+      />
+    </div>
   </main>
 </template>
 
