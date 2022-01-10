@@ -35,6 +35,7 @@ export default class MapEditor {
 
     this.ghostTile = new Tile(vec2.create(), 0, TEXTURES[this.tileType]);
     this.ghostTile.setZIndex(1);
+    this.ghostTile.getPieces()[0].opacity = 0.6;
     this.world.addEntity(this.ghostTile);
 
     this.canvas.keys.addListener("KeyR", this.ghostTileRotate);

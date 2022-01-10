@@ -46,6 +46,8 @@ export default defineComponent({
     const changeTile = (type: string) => {
       mapEditor.value?.setTileType(type);
       selectedTile.value = type;
+
+      document.getElementById("blzCanvas")?.focus();
     };
 
     onMounted(() => {

@@ -53,8 +53,8 @@ export default abstract class Game {
     globalThis.BALL_RADIUS = 0.25;
     globalThis.BALL_MASS = 1;
 
-    globalThis.TILE_TYPES = ["borderMiddle", "borderCorner"];
-    globalThis.TILE_IMAGES = ["border-middle", "border-corner"];
+    globalThis.TILE_TYPES = ["borderMiddle", "borderCorner", "borderCornerInner"];
+    globalThis.TILE_IMAGES = ["border-middle", "border-corner", "border-corner-inner"];
 
     globalThis.TILE_SIZE = 1;
     globalThis.TILE_SLOP = 0.01;
@@ -116,8 +116,15 @@ export default abstract class Game {
         yellow: new Texture(new Color("#FEFE00" + trailOpacity)),
       };
 
-      const borderMiddle = new Texture(new Color("#929292"));
-      const borderCorner = new Texture(new Color("#929292"));
+      const tileTexs = [
+        new Texture(new Color("#929292")),
+        new Texture(new Color("#929292")),
+        new Texture(new Color("#929292")),
+      ];
+
+      for (let i = 0; i < TILE_TYPES.length; i++) {
+        TEXTURES[TILE_TYPES[i]] = tileTexs[i];
+      }
 
       Object.keys(balls).forEach((k) => {
         TEXTURES[`${k}Ball`] = balls[k];
@@ -135,12 +142,8 @@ export default abstract class Game {
         TEXTURES[`${k}Trail`] = trails[k];
       });
 
-      TEXTURES.borderMiddle = borderMiddle;
-      TEXTURES.borderCorner = borderCorner;
-
       await ATLAS.addTextures(
-        borderMiddle,
-        borderCorner,
+        ...tileTexs,
         ...Object.values(balls),
         ...Object.values(anchors),
         ...Object.values(rods),
@@ -150,8 +153,7 @@ export default abstract class Game {
       const texSuffix = SMALL_TEXS ? "-small" : "";
 
       await Promise.all([
-        borderMiddle.loadImage("/assets/tiles/border-middle.png"),
-        borderCorner.loadImage("/assets/tiles/border-corner.png"),
+        ...tileTexs.map((tex, i) => tex.loadImage(`/assets/tiles/${TILE_IMAGES[i]}.png`)),
         ...Object.keys(balls).map((k) => balls[k].loadImage(`/assets/balls/${k}-ball${texSuffix}.png`)),
         ...Object.keys(anchors).map((k) =>
           anchors[k].loadImage(`/assets/anchors/${k}-anchor${texSuffix}.png`)
