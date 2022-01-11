@@ -53,8 +53,14 @@ export default abstract class Game {
     globalThis.BALL_RADIUS = 0.25;
     globalThis.BALL_MASS = 1;
 
-    globalThis.TILE_TYPES = ["borderMiddle", "borderCorner", "borderCornerInner"];
-    globalThis.TILE_IMAGES = ["border-middle", "border-corner", "border-corner-inner"];
+    globalThis.TILE_TYPES = ["borderMiddle", "borderCorner", "borderCornerInner", "logMiddle", "logCorner"];
+    globalThis.TILE_IMAGES = [
+      "border-middle",
+      "border-corner",
+      "border-corner-inner",
+      "log-middle",
+      "log-corner",
+    ];
 
     globalThis.TILE_SIZE = 1;
     globalThis.TILE_SLOP = 0.01;
@@ -120,6 +126,8 @@ export default abstract class Game {
         new Texture(new Color("#929292")),
         new Texture(new Color("#929292")),
         new Texture(new Color("#929292")),
+        new Texture(new Color("#663a31")),
+        new Texture(new Color("#663a31")),
       ];
 
       for (let i = 0; i < TILE_TYPES.length; i++) {
