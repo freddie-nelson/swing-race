@@ -59,6 +59,9 @@ export default abstract class Game {
       "borderCornerInner",
       "logMiddle",
       "logCorner",
+      "logCornerMirror",
+      "logJunction",
+      "logCross",
       "logEnd",
     ];
     globalThis.TILE_IMAGES = [
@@ -67,6 +70,9 @@ export default abstract class Game {
       "border-corner-inner",
       "log-middle",
       "log-corner",
+      "log-corner-mirror",
+      "log-junction",
+      "log-cross",
       "log-end",
     ];
 
@@ -134,6 +140,9 @@ export default abstract class Game {
         new Texture(new Color("#929292")),
         new Texture(new Color("#929292")),
         new Texture(new Color("#929292")),
+        new Texture(new Color("#663a31")),
+        new Texture(new Color("#663a31")),
+        new Texture(new Color("#663a31")),
         new Texture(new Color("#663a31")),
         new Texture(new Color("#663a31")),
         new Texture(new Color("#663a31")),
@@ -212,10 +221,12 @@ export default abstract class Game {
   }
 
   static hide() {
+    console.log("hide", !!this.canvas);
     if (this.canvas) this.canvas.element.style.display = "none";
   }
 
   static show() {
+    console.log("show", !!this.canvas);
     if (this.canvas) this.canvas.element.style.display = "block";
   }
 }

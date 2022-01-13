@@ -4,8 +4,9 @@
       src="/assets/logo.png"
       alt="Swing Race Logo"
       class="
+        logo
         w-256px
-        -mt-[calc(36px*var(--img-scale))]
+        -mt-[calc(24px*var(--img-scale))]
         mb-16
         select-none
         pointer-events-none
@@ -74,5 +75,19 @@ export default defineComponent({
 <style scoped lang="scss">
 .gameCanvas {
   position: absolute;
+}
+
+.logo {
+  animation: logo-animation alternate infinite 1.3s ease-in-out;
+}
+
+@keyframes logo-animation {
+  from {
+    transform: scale(0.99);
+  }
+
+  to {
+    transform: scale(1.02);
+  }
 }
 </style>
