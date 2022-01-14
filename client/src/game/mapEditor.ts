@@ -21,6 +21,7 @@ export default class MapEditor {
   editorControls = new EditorCameraControls(this.camera, this.canvas.element);
   ghostTile: Entity;
   tileType = "borderMiddle";
+  disableTilePlace = false;
 
   tiles: Tile[] = [];
 
@@ -47,7 +48,13 @@ export default class MapEditor {
 
     this.canvas.element.focus();
 
-    // const player = new Player("blue", true);
+    // new Player("blue", true);
+
+    // this.canvas.keys.addListener("KeyS", (pressed) => {
+    //   if (pressed) {
+    //     this.disableTilePlace = !this.disableTilePlace;
+    //   }
+    // });
   }
 
   ghostTileRotate = (pressed: boolean) => {
@@ -64,7 +71,7 @@ export default class MapEditor {
   };
 
   tilePlace = (pressed: boolean) => {
-    if (!pressed) return;
+    if (!pressed || this.disableTilePlace) return;
 
     const prev = this.findTileAt(this.ghostTile.getPosition());
     if (prev) {
@@ -77,6 +84,7 @@ export default class MapEditor {
       TEXTURES[this.tileType]
     );
     this.world.addEntity(tile);
+    // this.physics.addBody(tile);
 
     this.tiles.push(tile);
   };
@@ -91,6 +99,7 @@ export default class MapEditor {
 
   removeTile(tile: Tile) {
     this.world.removeEntity(tile);
+    this.physics.removeBody(tile);
     const i = this.tiles.findIndex((t) => t === tile);
     if (i === -1) return;
 

@@ -9,6 +9,9 @@ export default class Tile extends Entity {
     super(pos, new RectCollider(TILE_SIZE, TILE_SIZE), [], TILE_MASS, "tile");
     this.setRotation(rot);
 
+    this.isStatic = true;
+    this.filter.group = 12;
+
     const rect = new Rect(TILE_SIZE + TILE_SLOP, TILE_SIZE + TILE_SLOP);
     rect.texture = texture;
     this.addPiece(rect);
