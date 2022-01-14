@@ -8,6 +8,7 @@ import Rect from "blaze-2d/lib/src/shapes/rect";
 import World from "blaze-2d/lib/src/world";
 import { vec2 } from "gl-matrix";
 import Game from "./game";
+import GameMap from "./map";
 import Player from "./player";
 import Tile from "./tile";
 
@@ -23,7 +24,7 @@ export default class MapEditor {
   tileType = "borderMiddle";
   disableTilePlace = false;
 
-  tiles: Tile[] = [];
+  map: GameMap;
 
   constructor() {
     this.camera.minZoom = 0.5;
@@ -34,7 +35,7 @@ export default class MapEditor {
     Blaze.setScene(this.scene);
     Game.setupScene();
 
-    this.ghostTile = new Tile(vec2.create(), 0, TEXTURES[this.tileType]);
+    this.ghostTile = new Tile(vec2.create(), 0, this.tileType);
     this.ghostTile.setZIndex(1);
     this.ghostTile.getPieces()[0].opacity = 0.6;
     this.world.addEntity(this.ghostTile);
@@ -47,6 +48,8 @@ export default class MapEditor {
     this.canvas.mouse.addListener(Mouse.MOVE, this.tileRemove);
 
     this.canvas.element.focus();
+
+    this.map = new GameMap("My Map", "Joe");
 
     // new Player("blue", true);
 
@@ -65,32 +68,26 @@ export default class MapEditor {
 
   ghostTileMove = (pressed: boolean, pos: vec2) => {
     const world = this.world.getWorldFromPixel(pos);
-    const tile = Game.worldToTilePos(world);
-
-    this.ghostTile.setPosition(tile);
+    this.ghostTile.setPosition(world);
   };
 
   tilePlace = (pressed: boolean) => {
     if (!pressed || this.disableTilePlace) return;
 
-    const prev = this.findTileAt(this.ghostTile.getPosition());
+    const prev = this.map.findTileAt(this.ghostTile.getPosition());
     if (prev) {
       this.removeTile(prev);
     }
 
-    const tile = new Tile(
-      this.ghostTile.getPosition(),
-      this.ghostTile.getRotation(),
-      TEXTURES[this.tileType]
-    );
+    const tile = new Tile(this.ghostTile.getPosition(), this.ghostTile.getRotation(), this.tileType);
     this.world.addEntity(tile);
     // this.physics.addBody(tile);
 
-    this.tiles.push(tile);
+    this.map.addTile(tile);
   };
 
   tileRemove = (pressed: boolean, pos: vec2, e: MouseEvent) => {
-    const tile = this.findTileAt(this.ghostTile.getPosition());
+    const tile = this.map.findTileAt(this.ghostTile.getPosition());
     if (!this.canvas.mouse.isPressed(Mouse.RIGHT) || !tile) return;
 
     this.removeTile(tile);
@@ -100,20 +97,7 @@ export default class MapEditor {
   removeTile(tile: Tile) {
     this.world.removeEntity(tile);
     this.physics.removeBody(tile);
-    const i = this.tiles.findIndex((t) => t === tile);
-    if (i === -1) return;
-
-    this.tiles.splice(i, 1);
-  }
-
-  findTileAt(pos: vec2) {
-    const tilePos = Game.worldToTilePos(pos);
-
-    for (const tile of this.tiles) {
-      if (vec2.equals(tile.getPosition(), tilePos)) {
-        return tile;
-      }
-    }
+    this.map.removeTile(tile);
   }
 
   setTileType(type: string) {
@@ -122,5 +106,18 @@ export default class MapEditor {
 
     this.tileType = type;
     this.ghostTile.getPieces()[0].texture = tex;
+  }
+
+  exportMap(name: string, author: string) {
+    this.map.name = name;
+    this.map.author = author;
+
+    const json = this.map.toJSON();
+    const blob = new Blob([json], { type: "application/json" });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = this.map.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    a.click();
   }
 }

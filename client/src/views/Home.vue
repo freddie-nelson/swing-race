@@ -51,7 +51,7 @@
 import { defineComponent, onMounted, onUnmounted } from "vue";
 import Game from "@/game/game";
 
-import SImageButton from "@/components/app/SImageButton.vue";
+import SImageButton from "@/components/button/SImageButton.vue";
 
 export default defineComponent({
   name: "Home",

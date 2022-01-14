@@ -221,12 +221,12 @@ export default abstract class Game {
   }
 
   static hide() {
-    console.log("hide", !!this.canvas);
+    // console.log("hide", !!this.canvas);
     if (this.canvas) this.canvas.element.style.display = "none";
   }
 
   static show() {
-    console.log("show", !!this.canvas);
+    // console.log("show", !!this.canvas);
     if (this.canvas) this.canvas.element.style.display = "block";
   }
 }

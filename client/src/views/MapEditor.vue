@@ -32,13 +32,45 @@
         image="/assets/import-btn.png"
         hoverImage="/assets/import-btn-hover.png"
         class="w-48px h-16px transform scale-110 hover:scale-125"
+        @click="importMap"
       />
 
       <s-image-button
         image="/assets/export-btn.png"
         hoverImage="/assets/export-btn-hover.png"
         class="w-48px h-16px transform scale-110 hover:scale-125"
+        @click="showExportModal = true"
       />
+      <s-modal
+        v-if="showExportModal"
+        @close="showExportModal = false"
+        class="w-full max-w-xl"
+      >
+        <div class="flex flex-col items-center">
+          <h2 class="text-3xl">Export Map</h2>
+          <form
+            class="flex flex-col gap-4 mt-6 w-full max-w-lg"
+            @submit.prevent="exportMap"
+          >
+            <s-input-text
+              v-model="mapName"
+              name="mapName"
+              label="Map Name"
+              placeholder="My Map"
+              required
+            />
+            <s-input-text
+              v-model="mapAuthor"
+              name="mapAuthor"
+              label="Author Name"
+              placeholder="Joe Mama"
+              required
+            />
+
+            <s-button class="mt-5 py-0 text-lg" type="submit">Export</s-button>
+          </form>
+        </div>
+      </s-modal>
     </div>
 
     <router-link
@@ -63,11 +95,20 @@
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import Game from "@/game/game";
 import MapEditor from "@/game/mapEditor";
-import SImageButton from "@/components/app/SImageButton.vue";
+
+import SImageButton from "@/components/button/SImageButton.vue";
+import SModal from "@/components/modal/SModal.vue";
+import SInputText from "@/components/input/SInputText.vue";
+import SButton from "@/components/button/SButton.vue";
 
 export default defineComponent({
   name: "MapEditor",
-  components: { SImageButton },
+  components: {
+    SImageButton,
+    SModal,
+    SInputText,
+    SButton,
+  },
   setup() {
     const mapEditor = ref<MapEditor>();
     // eslint-disable-next-line no-undef
@@ -81,6 +122,21 @@ export default defineComponent({
       selectedTile.value = type;
 
       document.getElementById("blzCanvas")?.focus();
+    };
+
+    const importMap = () => {
+      console.log("import");
+    };
+
+    const showExportModal = ref(false);
+
+    const mapName = ref("");
+    const mapAuthor = ref("");
+    const exportMap = () => {
+      if (!mapEditor.value || !mapName.value || !mapAuthor.value) return;
+
+      mapEditor.value.exportMap(mapName.value, mapAuthor.value);
+      showExportModal.value = false;
     };
 
     onMounted(() => {
@@ -104,6 +160,13 @@ export default defineComponent({
       mapEditor,
 
       changeTile,
+
+      importMap,
+
+      showExportModal,
+      mapName,
+      mapAuthor,
+      exportMap,
     };
   },
 });

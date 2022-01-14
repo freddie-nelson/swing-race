@@ -11,6 +11,8 @@ module.exports = {
       colors: {
         bg: "#202020",
         "bg-light": "#565656",
+        "t-main": "#FFFFFF",
+        "t-sub": "#CCCCCC",
         "s-blue": "#0061FF",
         "s-cyan": "#00DDFF",
         "s-green": "#26FE1E",
