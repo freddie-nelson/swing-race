@@ -125,7 +125,9 @@ export default defineComponent({
     };
 
     const importMap = () => {
-      console.log("import");
+      if (!mapEditor.value) return;
+
+      mapEditor.value.importMap();
     };
 
     const showExportModal = ref(false);

@@ -108,6 +108,24 @@ export default class MapEditor {
     this.ghostTile.getPieces()[0].texture = tex;
   }
 
+  importMap() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.click();
+
+    input.addEventListener("input", async () => {
+      if (!input.files || !input.files[0]) return;
+
+      const file = input.files[0];
+      if (file.type !== "application/json") return;
+
+      const json = await file.text();
+      this.map.fromJSON(json);
+      this.loadMap();
+    });
+  }
+
   exportMap(name: string, author: string) {
     this.map.name = name;
     this.map.author = author;
@@ -119,5 +137,18 @@ export default class MapEditor {
     a.href = URL.createObjectURL(blob);
     a.download = this.map.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     a.click();
+  }
+
+  loadMap() {
+    this.world.removeAllEntities(false);
+    this.physics.removeAllBodies();
+
+    this.world.addEntity(this.ghostTile);
+
+    this.camera.setPosition(vec2.fromValues(0, 0));
+
+    for (const tile of this.map.tiles) {
+      this.world.addEntity(tile);
+    }
   }
 }

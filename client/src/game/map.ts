@@ -12,7 +12,7 @@ export default class GameMap {
   name: string;
   author: string;
 
-  private tiles: Tile[] = [];
+  tiles: Tile[] = [];
 
   constructor(name: string, author: string) {
     this.name = name;
