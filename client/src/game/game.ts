@@ -38,6 +38,12 @@ export default abstract class Game {
   static canvas: BlazeElement<HTMLCanvasElement>;
   static cleanup: () => void;
 
+  static controls = {
+    rollRight: "KeyD",
+    rollLeft: "KeyA",
+    jump: "Space",
+  };
+
   static init() {
     // setup blaze
     Blaze.init(<HTMLCanvasElement>document.querySelector("canvas"));
@@ -152,6 +158,8 @@ export default abstract class Game {
       TEXTURES.spawnMarker = new Texture(new Color("#DDDDDD"));
       TEXTURES.spawnMarkerSelected = new Texture(new Color("#f08710"));
 
+      TEXTURES.jumpBarContainer = new Texture(new Color("#6b6a6b"));
+
       for (let i = 0; i < TILE_TYPES.length; i++) {
         TEXTURES[TILE_TYPES[i]] = tileTexs[i];
       }
@@ -175,6 +183,7 @@ export default abstract class Game {
       await ATLAS.addTextures(
         TEXTURES.spawnMarker,
         TEXTURES.spawnMarkerSelected,
+        TEXTURES.jumpBarContainer,
         ...tileTexs,
         ...Object.values(balls),
         ...Object.values(anchors),

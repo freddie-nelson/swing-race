@@ -217,9 +217,12 @@ export default class MapEditor {
       Blaze.setScene(this.scene);
       this.playTesting = false;
       this.editorControls.disabled = false;
+      this.camera.setPosition(this.map.spawn);
     } else {
       this.playTesting = true;
       this.editorControls.disabled = true;
+      this.canvas.element.focus();
+
       Game.loadMap(this.map);
     }
   }
