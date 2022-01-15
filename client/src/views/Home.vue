@@ -1,7 +1,7 @@
 <template>
   <main class="flex flex-col justify-center items-center p-12">
     <img
-      src="/assets/logo.png"
+      src="/assets/misc/logo.png"
       alt="Swing Race Logo"
       class="
         logo
@@ -15,15 +15,15 @@
 
     <div class="flex mb-10">
       <s-image-button
-        image="/assets/singleplayer-btn.png"
-        hoverImage="/assets/singleplayer-btn-hover.png"
+        image="/assets/buttons/singleplayer-btn.png"
+        hoverImage="/assets/buttons/singleplayer-btn-hover.png"
         class="w-128px h-32px mr-10 transform hover:scale-110"
         @click="$router.push({ name: 'Singleplayer' })"
       />
 
       <s-image-button
-        image="/assets/multiplayer-btn.png"
-        hoverImage="/assets/multiplayer-btn-hover.png"
+        image="/assets/buttons/multiplayer-btn.png"
+        hoverImage="/assets/buttons/multiplayer-btn-hover.png"
         class="w-128px h-32px transform hover:scale-110"
         @click="$router.push({ name: 'Multiplayer' })"
       />
@@ -31,15 +31,15 @@
 
     <div class="flex mb-10">
       <s-image-button
-        image="/assets/map-editor-btn.png"
-        hoverImage="/assets/map-editor-btn-hover.png"
+        image="/assets/buttons/map-editor-btn.png"
+        hoverImage="/assets/buttons/map-editor-btn-hover.png"
         class="w-128px h-32px mr-10 transform hover:scale-110"
         @click="$router.push({ name: 'MapEditor' })"
       />
 
       <s-image-button
-        image="/assets/leaderboard-btn.png"
-        hoverImage="/assets/leaderboard-btn-hover.png"
+        image="/assets/buttons/leaderboard-btn.png"
+        hoverImage="/assets/buttons/leaderboard-btn-hover.png"
         class="w-128px h-32px transform hover:scale-110"
         @click="$router.push({ name: 'Leaderboard' })"
       />

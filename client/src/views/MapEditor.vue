@@ -1,7 +1,16 @@
 <template>
-  <section class="w-full max-w-sm h-screen bg-bg-light flex flex-col flex-grow">
+  <section
+    class="
+      w-full
+      max-w-sm
+      h-screen
+      bg-bg-light
+      flex flex-col flex-grow
+      relative
+    "
+  >
     <img
-      src="/assets/map-editor-banner.png"
+      src="/assets/misc/map-editor-banner.png"
       alt="Map Editor Banner"
       class="w-full pointer-events-none"
     />
@@ -27,67 +36,87 @@
       </div>
     </div>
 
-    <div class="flex justify-between mt-auto mb-5 p-2 px-8">
-      <s-image-button
-        image="/assets/import-btn.png"
-        hoverImage="/assets/import-btn-hover.png"
-        class="w-48px h-16px transform scale-110 hover:scale-125"
-        @click="importMap"
-      />
+    <div class="flex flex-col mt-auto">
+      <div class="flex justify-between mb-7 p-2 px-8">
+        <s-image-button
+          image="/assets/buttons/import-btn.png"
+          hoverImage="/assets/buttons/import-btn-hover.png"
+          class="w-48px h-16px transform scale-110 hover:scale-125"
+          @click="importMap"
+        />
 
-      <s-image-button
-        image="/assets/export-btn.png"
-        hoverImage="/assets/export-btn-hover.png"
-        class="w-48px h-16px transform scale-110 hover:scale-125"
-        @click="showExportModal = true"
-      />
-      <s-modal
-        v-if="showExportModal"
-        @close="showExportModal = false"
-        class="w-full max-w-xl"
+        <s-image-button
+          image="/assets/buttons/export-btn.png"
+          hoverImage="/assets/buttons/export-btn-hover.png"
+          class="w-48px h-16px transform scale-110 hover:scale-125"
+          @click="showExportModal = true"
+        />
+        <s-modal
+          v-if="showExportModal"
+          @close="showExportModal = false"
+          class="w-full max-w-xl"
+        >
+          <div class="flex flex-col items-center">
+            <h2 class="text-3xl">Export Map</h2>
+            <form
+              class="flex flex-col gap-4 mt-6 w-full max-w-lg"
+              @submit.prevent="exportMap"
+            >
+              <s-input-text
+                v-model="mapName"
+                name="mapName"
+                label="Map Name"
+                placeholder="My Map"
+                required
+              />
+              <s-input-text
+                v-model="mapAuthor"
+                name="mapAuthor"
+                label="Author Name"
+                placeholder="Joe Mama"
+                required
+              />
+
+              <s-button class="mt-5 py-0 text-lg" type="submit"
+                >Export</s-button
+              >
+            </form>
+          </div>
+        </s-modal>
+      </div>
+
+      <s-button
+        class="
+          text-base
+          w-[calc(100%-1.3rem)]
+          mx-auto
+          h-6
+          mb-9
+          transform
+          scale-90
+        "
+        @click="playTest"
       >
-        <div class="flex flex-col items-center">
-          <h2 class="text-3xl">Export Map</h2>
-          <form
-            class="flex flex-col gap-4 mt-6 w-full max-w-lg"
-            @submit.prevent="exportMap"
-          >
-            <s-input-text
-              v-model="mapName"
-              name="mapName"
-              label="Map Name"
-              placeholder="My Map"
-              required
-            />
-            <s-input-text
-              v-model="mapAuthor"
-              name="mapAuthor"
-              label="Author Name"
-              placeholder="Joe Mama"
-              required
-            />
+        {{ isPlayTesting ? "Stop Play Test" : "Play Test" }}
+      </s-button>
 
-            <s-button class="mt-5 py-0 text-lg" type="submit">Export</s-button>
-          </form>
-        </div>
-      </s-modal>
+      <router-link
+        to="/"
+        class="
+          font-main font-bold
+          text-white text-xl
+          underline
+          hover:text-s-cyan
+          transition-colors
+          ease-in-out
+          duration-300
+          mb-6
+          mx-auto
+        "
+      >
+        Back to Menu
+      </router-link>
     </div>
-
-    <router-link
-      to="/"
-      class="
-        font-main font-bold
-        text-white text-xl
-        underline
-        hover:text-s-cyan
-        transition-colors
-        ease-in-out
-        duration-300
-        mb-6
-        mx-auto
-      "
-      >Back to Menu</router-link
-    >
   </section>
 </template>
 
@@ -110,7 +139,7 @@ export default defineComponent({
     SButton,
   },
   setup() {
-    const mapEditor = ref<MapEditor>();
+    let mapEditor: MapEditor;
     // eslint-disable-next-line no-undef
     const tileTypes = ref(TILE_TYPES);
     // eslint-disable-next-line no-undef
@@ -118,16 +147,16 @@ export default defineComponent({
     const selectedTile = ref("");
 
     const changeTile = (type: string) => {
-      mapEditor.value?.setTileType(type);
+      mapEditor?.setTileType(type);
       selectedTile.value = type;
 
       document.getElementById("blzCanvas")?.focus();
     };
 
     const importMap = () => {
-      if (!mapEditor.value) return;
+      if (!mapEditor) return;
 
-      mapEditor.value.importMap();
+      mapEditor.importMap();
     };
 
     const showExportModal = ref(false);
@@ -135,18 +164,27 @@ export default defineComponent({
     const mapName = ref("");
     const mapAuthor = ref("");
     const exportMap = () => {
-      if (!mapEditor.value || !mapName.value || !mapAuthor.value) return;
+      if (!mapEditor || !mapName.value || !mapAuthor.value) return;
 
-      mapEditor.value.exportMap(mapName.value, mapAuthor.value);
+      mapEditor.exportMap(mapName.value, mapAuthor.value);
       showExportModal.value = false;
+    };
+
+    const isPlayTesting = ref(false);
+    const playTest = () => {
+      if (!mapEditor) return;
+
+      isPlayTesting.value = !isPlayTesting.value;
+      mapEditor.playTest();
     };
 
     onMounted(() => {
       document.getElementById("app")?.classList.add("map-editor");
 
       Game.show();
-      mapEditor.value = Game.loadMapEditor();
-      selectedTile.value = mapEditor.value?.tileType || "";
+      let m = Game.loadMapEditor();
+      if (m) mapEditor = m;
+      selectedTile.value = mapEditor?.tileType || "";
     });
 
     onUnmounted(() => {
@@ -159,7 +197,6 @@ export default defineComponent({
       tileTypes,
       tileImages,
       selectedTile,
-      mapEditor,
 
       changeTile,
 
@@ -169,6 +206,9 @@ export default defineComponent({
       mapName,
       mapAuthor,
       exportMap,
+
+      isPlayTesting,
+      playTest,
     };
   },
 });

@@ -11,6 +11,7 @@ import { vec2 } from "gl-matrix";
 import Player from "./player";
 import Scene from "blaze-2d/lib/src/scene";
 import MapEditor from "./mapEditor";
+import GameMap from "./map";
 
 // setup globals
 declare global {
@@ -148,6 +149,9 @@ export default abstract class Game {
         new Texture(new Color("#663a31")),
       ];
 
+      TEXTURES.spawnMarker = new Texture(new Color("#DDDDDD"));
+      TEXTURES.spawnMarkerSelected = new Texture(new Color("#f08710"));
+
       for (let i = 0; i < TILE_TYPES.length; i++) {
         TEXTURES[TILE_TYPES[i]] = tileTexs[i];
       }
@@ -169,6 +173,8 @@ export default abstract class Game {
       });
 
       await ATLAS.addTextures(
+        TEXTURES.spawnMarker,
+        TEXTURES.spawnMarkerSelected,
         ...tileTexs,
         ...Object.values(balls),
         ...Object.values(anchors),
@@ -179,6 +185,8 @@ export default abstract class Game {
       const texSuffix = SMALL_TEXS ? "-small" : "";
 
       await Promise.all([
+        TEXTURES.spawnMarker.loadImage("/assets/misc/spawn-marker.png"),
+        TEXTURES.spawnMarkerSelected.loadImage("/assets/misc/spawn-marker-selected.png"),
         ...tileTexs.map((tex, i) => tex.loadImage(`/assets/tiles/${TILE_IMAGES[i]}.png`)),
         ...Object.keys(balls).map((k) => balls[k].loadImage(`/assets/balls/${k}-ball${texSuffix}.png`)),
         ...Object.keys(anchors).map((k) =>
@@ -196,7 +204,7 @@ export default abstract class Game {
 
     world.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
     world.useBatchRenderer = true;
-    physics.setGravity(vec2.fromValues(0, -20));
+    physics.setGravity(vec2.fromValues(0, -12));
   }
 
   static loadMapEditor() {
@@ -204,6 +212,23 @@ export default abstract class Game {
     this.unload();
 
     return new MapEditor();
+  }
+
+  static loadMap(map: GameMap, addPlayer = true) {
+    if (!this.canvas) return;
+    this.unload();
+
+    const scene = new Scene();
+    Blaze.setScene(scene);
+    this.setupScene();
+
+    if (addPlayer) {
+      const player = new Player("blue", true, true);
+      player.ball.setPosition(map.spawn);
+    }
+
+    scene.world.addEntities(...map.tiles);
+    scene.physics.addBodies(...map.tiles);
   }
 
   static unload() {

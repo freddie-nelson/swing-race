@@ -31,8 +31,8 @@
         <s-image-button
           v-if="closeable"
           class="absolute right-4 top-1 outline-none w-8px h-8px"
-          image="/assets/close-btn.png"
-          hoverImage="/assets/close-btn-hover.png"
+          image="/assets/buttons/close-btn.png"
+          hoverImage="/assets/buttons/close-btn-hover.png"
           @click="$emit('close')"
         />
 

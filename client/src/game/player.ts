@@ -9,15 +9,12 @@ import { cross2DWithScalar } from "@blz/utils/vectors";
 import RectCollider from "blaze-2d/lib/src/physics/collider/rect";
 import Line from "blaze-2d/lib/src/shapes/line";
 import Blaze from "blaze-2d/lib/src/blaze";
-import BatchRenderer from "blaze-2d/lib/src/renderer/batchRenderer";
-import World from "blaze-2d/lib/src/world";
-import Physics from "blaze-2d/lib/src/physics/physics";
 
 export default class Player {
   ball: Entity;
 
   trail: Entity;
-  trailLength = 12;
+  trailLength = 14;
 
   anchor: Entity;
   rod: Entity;
@@ -25,19 +22,23 @@ export default class Player {
   grappleBoost = 20;
   maxGrappleBoost = 50;
 
+  maxVelocity = 30;
+
   color: string;
 
   private world = Blaze.getScene().world;
   private physics = Blaze.getScene().physics;
 
-  constructor(color: string, controls = false) {
+  constructor(color: string, controls = false, followCam = false) {
     this.color = color;
 
     const ballCircle = new Rect(BALL_RADIUS * 2, BALL_RADIUS * 2);
     ballCircle.texture = this.getBallTexture();
     this.ball = new Entity(vec2.create(), new CircleCollider(BALL_RADIUS), [ballCircle], BALL_MASS);
+    this.ball.setInertia(BALL_MASS / 8);
     this.ball.setZIndex(1);
     this.ball.airFriction = 0.05;
+    if (followCam) this.ball.addEventListener("update", this.ballListener);
 
     this.trail = new Entity(vec2.create(), new CircleCollider(0));
     for (let i = 1; i <= this.trailLength; i++) {
@@ -66,6 +67,17 @@ export default class Player {
 
     if (controls) CANVAS.mouse.addListener(Mouse.LEFT, this.mouseListener);
   }
+
+  ballListener = (delta: number) => {
+    this.world.getCamera().setPosition(this.ball.getPosition());
+
+    const vel = this.ball.velocity;
+    const mag = vec2.len(vel);
+    if (mag > this.maxVelocity) {
+      vec2.normalize(this.ball.velocity, this.ball.velocity);
+      vec2.scale(this.ball.velocity, this.ball.velocity, this.maxVelocity);
+    }
+  };
 
   trailListener = (delta: number) => {
     const pieces = <Circle[]>[...this.trail.getPieces()];

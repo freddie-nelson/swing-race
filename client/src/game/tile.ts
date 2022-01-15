@@ -22,6 +22,7 @@ export default class Tile extends Entity {
   }
 
   setPosition(pos: vec2) {
-    vec2.copy(this.getPosition(), Game.worldToTilePos(pos));
+    const tilePos = Game.worldToTilePos(pos);
+    super.setPosition(tilePos);
   }
 }

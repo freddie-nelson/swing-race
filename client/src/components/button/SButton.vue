@@ -18,6 +18,7 @@
       transition-all
       ease-in-out
       duration-300
+      outline-none
     "
   >
     <slot></slot>

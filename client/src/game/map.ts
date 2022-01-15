@@ -5,6 +5,8 @@ import Tile from "./tile";
 export interface JSONMap {
   name: string;
   author: string;
+
+  spawn: vec2;
   tiles: { type: string; pos: vec2; rot: number }[];
 }
 
@@ -12,6 +14,7 @@ export default class GameMap {
   name: string;
   author: string;
 
+  spawn = vec2.create();
   tiles: Tile[] = [];
 
   constructor(name: string, author: string) {
@@ -52,6 +55,7 @@ export default class GameMap {
       name: this.name,
       author: this.author,
 
+      spawn: this.spawn,
       tiles: this.tiles.map((t) => {
         return {
           type: t.type,
@@ -67,10 +71,11 @@ export default class GameMap {
   fromJSON(json: string) {
     const map: JSONMap = JSON.parse(json);
 
-    this.name = map.name;
-    this.author = map.author;
+    this.name = map.name || "";
+    this.author = map.author || "";
 
-    this.tiles = map.tiles.map((t) => {
+    this.spawn = map.spawn || vec2.create();
+    this.tiles = (map.tiles || []).map((t) => {
       return new Tile(t.pos, t.rot, t.type);
     });
   }

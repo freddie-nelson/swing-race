@@ -2,6 +2,7 @@ import Blaze from "blaze-2d/lib/src/blaze";
 import EditorCameraControls from "blaze-2d/lib/src/dropins/camera/editorControls";
 import Entity from "blaze-2d/lib/src/entity";
 import { Mouse } from "blaze-2d/lib/src/input/mouse";
+import CircleCollider from "blaze-2d/lib/src/physics/collider/circle";
 import RectCollider from "blaze-2d/lib/src/physics/collider/rect";
 import Scene from "blaze-2d/lib/src/scene";
 import Rect from "blaze-2d/lib/src/shapes/rect";
@@ -22,7 +23,12 @@ export default class MapEditor {
   editorControls = new EditorCameraControls(this.camera, this.canvas.element);
   ghostTile: Entity;
   tileType = "borderMiddle";
-  disableTilePlace = false;
+  tilePlaceDisabled = false;
+
+  spawnMarker: Entity;
+  spawnMarkerPicked = false;
+
+  playTesting = false;
 
   map: GameMap;
 
@@ -34,6 +40,15 @@ export default class MapEditor {
 
     Blaze.setScene(this.scene);
     Game.setupScene();
+
+    const spawnMarkerRect = new Rect(BALL_RADIUS * 2, BALL_RADIUS * 2, vec2.create());
+    spawnMarkerRect.texture = TEXTURES["spawnMarker"];
+    this.spawnMarker = new Entity(vec2.create(), new CircleCollider(BALL_RADIUS), [spawnMarkerRect], 0);
+    this.spawnMarker.setZIndex(2);
+    this.spawnMarker.isStatic = true;
+
+    this.canvas.mouse.addListener(Mouse.LEFT, this.pickSpawnMarker);
+    this.canvas.mouse.addListener(Mouse.MOVE, this.moveSpawnMarker);
 
     this.ghostTile = new Tile(vec2.create(), 0, this.tileType);
     this.ghostTile.setZIndex(1);
@@ -47,17 +62,18 @@ export default class MapEditor {
     this.canvas.mouse.addListener(Mouse.RIGHT, this.tileRemove);
     this.canvas.mouse.addListener(Mouse.MOVE, this.tileRemove);
 
-    this.canvas.element.focus();
-
     this.map = new GameMap("My Map", "Joe");
+    this.loadMap();
 
     // new Player("blue", true);
 
     // this.canvas.keys.addListener("KeyS", (pressed) => {
     //   if (pressed) {
-    //     this.disableTilePlace = !this.disableTilePlace;
+    //     this.tilePlaceDisabled = !this.tilePlaceDisabled;
     //   }
     // });
+
+    this.canvas.element.focus();
   }
 
   ghostTileRotate = (pressed: boolean) => {
@@ -72,7 +88,7 @@ export default class MapEditor {
   };
 
   tilePlace = (pressed: boolean) => {
-    if (!pressed || this.disableTilePlace) return;
+    if (!pressed || this.tilePlaceDisabled || this.playTesting) return;
 
     const prev = this.map.findTileAt(this.ghostTile.getPosition());
     if (prev) {
@@ -87,6 +103,8 @@ export default class MapEditor {
   };
 
   tileRemove = (pressed: boolean, pos: vec2, e: MouseEvent) => {
+    if (this.playTesting) return;
+
     const tile = this.map.findTileAt(this.ghostTile.getPosition());
     if (!this.canvas.mouse.isPressed(Mouse.RIGHT) || !tile) return;
 
@@ -94,10 +112,50 @@ export default class MapEditor {
     e.preventDefault();
   };
 
+  pickSpawnMarker = (pressed: boolean, pos: vec2) => {
+    if (this.playTesting) return;
+
+    if (!pressed) {
+      this.spawnMarkerPicked = false;
+      this.spawnMarker.getPieces()[0].texture = TEXTURES.spawnMarker;
+      this.enableTilePlace();
+      return;
+    }
+
+    const world = this.world.getWorldFromPixel(pos);
+
+    const picked = this.physics.pick(world);
+    if (!picked.includes(this.spawnMarker)) return;
+
+    this.spawnMarkerPicked = true;
+    this.spawnMarker.getPieces()[0].texture = TEXTURES.spawnMarkerSelected;
+    this.spawnMarker.setPosition(world);
+    vec2.copy(this.map.spawn, world);
+    this.disableTilePlace();
+  };
+
+  moveSpawnMarker = (pressed: boolean, pos: vec2) => {
+    if (this.playTesting || !this.spawnMarkerPicked) return;
+
+    const world = this.world.getWorldFromPixel(pos);
+    this.spawnMarker.setPosition(world);
+    vec2.copy(this.map.spawn, world);
+  };
+
   removeTile(tile: Tile) {
     this.world.removeEntity(tile);
     this.physics.removeBody(tile);
     this.map.removeTile(tile);
+  }
+
+  enableTilePlace() {
+    if (!this.world.getEntities().includes(this.ghostTile)) this.world.addEntity(this.ghostTile);
+    this.tilePlaceDisabled = false;
+  }
+
+  disableTilePlace() {
+    this.world.removeEntity(this.ghostTile);
+    this.tilePlaceDisabled = true;
   }
 
   setTileType(type: string) {
@@ -143,12 +201,26 @@ export default class MapEditor {
     this.world.removeAllEntities(false);
     this.physics.removeAllBodies();
 
-    this.world.addEntity(this.ghostTile);
+    this.enableTilePlace();
 
-    this.camera.setPosition(vec2.fromValues(0, 0));
+    this.camera.setPosition(this.map.spawn);
 
-    for (const tile of this.map.tiles) {
-      this.world.addEntity(tile);
+    this.spawnMarker.setPosition(this.map.spawn);
+    this.world.addEntity(this.spawnMarker);
+    this.physics.addBody(this.spawnMarker);
+
+    this.world.addEntities(...this.map.tiles);
+  }
+
+  playTest() {
+    if (this.scene !== Blaze.getScene()) {
+      Blaze.setScene(this.scene);
+      this.playTesting = false;
+      this.editorControls.disabled = false;
+    } else {
+      this.playTesting = true;
+      this.editorControls.disabled = true;
+      Game.loadMap(this.map);
     }
   }
 }
