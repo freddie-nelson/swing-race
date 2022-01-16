@@ -140,7 +140,7 @@ export default class Player {
   }
 
   private updateIsOnGround() {
-    const ray = new Ray(this.ball.getPosition(), vec2.fromValues(0, -1), BALL_RADIUS + BALL_RADIUS / 5);
+    const ray = new Ray(this.ball.getPosition(), vec2.fromValues(0, -1), BALL_RADIUS + BALL_RADIUS / 2);
     const bodies = this.physics.raycast(ray).filter((b) => b !== this.ball);
 
     this.isOnGround = bodies.length > 0;

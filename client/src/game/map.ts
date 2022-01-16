@@ -33,8 +33,8 @@ export default class GameMap {
     this.tiles.splice(i, 1);
   }
 
-  findTileAt(pos: vec2) {
-    const tilePos = Game.worldToTilePos(pos);
+  findTileAt(pos: vec2, rot = 0) {
+    const tilePos = Game.worldToTilePos(pos, rot);
 
     for (const tile of this.tiles) {
       if (vec2.equals(tile.getPosition(), tilePos)) {
@@ -43,8 +43,8 @@ export default class GameMap {
     }
   }
 
-  removeTileAt(pos: vec2) {
-    const tile = this.findTileAt(pos);
+  removeTileAt(pos: vec2, rot = 0) {
+    const tile = this.findTileAt(pos, rot);
     if (!tile) return;
 
     this.removeTile(tile);

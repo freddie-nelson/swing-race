@@ -16,9 +16,16 @@
     />
 
     <div class="p-6">
-      <h2 class="text-2xl text-white font-main font-bold mb-2.5 select-none">
+      <h2 class="text-2xl text-white font-main font-bold mb-4 select-none">
         Tiles
       </h2>
+      <s-input-text
+        v-model="tileRotationInc"
+        name="tileRotationInc"
+        placeholder="-360 to 360"
+        label="Rotation Step"
+        class="text-white text-sm mb-5"
+      />
       <div class="grid grid-cols-4 grid-flow-row gap-4">
         <button
           v-for="(image, i) of tileImages"
@@ -121,7 +128,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import Game from "@/game/game";
 import MapEditor from "@/game/mapEditor";
 
@@ -152,6 +159,15 @@ export default defineComponent({
 
       document.getElementById("blzCanvas")?.focus();
     };
+
+    // eslint-disable-next-line no-undef
+    const tileRotationInc = ref(String((TILE_ROTATION_INC / Math.PI) * 180));
+    watch(tileRotationInc, (rot) => {
+      // eslint-disable-next-line no-undef
+      TILE_ROTATION_INC = ((Number(rot) || -90) * Math.PI) / 180;
+      mapEditor.ghostTile.setRotation(0);
+      mapEditor.ghostTile.setPosition(mapEditor.ghostTile.getPosition());
+    });
 
     const importMap = () => {
       if (!mapEditor) return;
@@ -199,6 +215,7 @@ export default defineComponent({
       selectedTile,
 
       changeTile,
+      tileRotationInc,
 
       importMap,
 

@@ -86,7 +86,7 @@ export default abstract class Game {
     globalThis.TILE_SIZE = 1;
     globalThis.TILE_SLOP = 0.01;
     globalThis.TILE_MASS = 0;
-    globalThis.TILE_ROTATION_INC = -Math.PI / 2;
+    globalThis.TILE_ROTATION_INC = -Math.PI / 4;
 
     this.canvas = Blaze.getCanvas();
 
@@ -246,10 +246,14 @@ export default abstract class Game {
     Blaze.setScene(new Scene());
   }
 
-  static worldToTilePos(world: vec2) {
+  static worldToTilePos(world: vec2, rot = 0) {
     const pos = vec2.clone(world);
-    pos[0] = Math.floor(pos[0] + TILE_SIZE / 2);
-    pos[1] = Math.floor(pos[1] + TILE_SIZE / 2);
+    vec2.rotate(pos, pos, vec2.create(), -rot);
+
+    pos[0] = Math.floor(pos[0]) + TILE_SIZE / 2;
+    pos[1] = Math.floor(pos[1]) + TILE_SIZE / 2;
+
+    vec2.rotate(pos, pos, vec2.create(), rot);
 
     return pos;
   }

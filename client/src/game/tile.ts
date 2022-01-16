@@ -11,6 +11,7 @@ export default class Tile extends Entity {
   constructor(pos: vec2, rot: number, type: string) {
     super(pos, new RectCollider(TILE_SIZE, TILE_SIZE), [], TILE_MASS, "tile");
     this.setRotation(rot);
+    this.setPosition(pos);
 
     this.type = type;
     this.isStatic = true;
@@ -22,7 +23,7 @@ export default class Tile extends Entity {
   }
 
   setPosition(pos: vec2) {
-    const tilePos = Game.worldToTilePos(pos);
+    const tilePos = Game.worldToTilePos(pos, this.getRotation());
     super.setPosition(tilePos);
   }
 }

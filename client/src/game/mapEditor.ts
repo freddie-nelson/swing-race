@@ -21,7 +21,7 @@ export default class MapEditor {
   camera = this.world.getCamera();
 
   editorControls = new EditorCameraControls(this.camera, this.canvas.element);
-  ghostTile: Entity;
+  ghostTile: Tile;
   tileType = "borderMiddle";
   tilePlaceDisabled = false;
 
@@ -79,18 +79,20 @@ export default class MapEditor {
   ghostTileRotate = (pressed: boolean) => {
     if (pressed) {
       this.ghostTile.rotate(TILE_ROTATION_INC);
+      this.ghostTile.setPosition(this.ghostTile.getPosition());
     }
   };
 
   ghostTileMove = (pressed: boolean, pos: vec2) => {
     const world = this.world.getWorldFromPixel(pos);
+
     this.ghostTile.setPosition(world);
   };
 
   tilePlace = (pressed: boolean) => {
     if (!pressed || this.tilePlaceDisabled || this.playTesting) return;
 
-    const prev = this.map.findTileAt(this.ghostTile.getPosition());
+    const prev = this.map.findTileAt(this.ghostTile.getPosition(), this.ghostTile.getRotation());
     if (prev) {
       this.removeTile(prev);
     }
@@ -105,7 +107,7 @@ export default class MapEditor {
   tileRemove = (pressed: boolean, pos: vec2, e: MouseEvent) => {
     if (this.playTesting) return;
 
-    const tile = this.map.findTileAt(this.ghostTile.getPosition());
+    const tile = this.map.findTileAt(this.ghostTile.getPosition(), this.ghostTile.getRotation());
     if (!this.canvas.mouse.isPressed(Mouse.RIGHT) || !tile) return;
 
     this.removeTile(tile);
