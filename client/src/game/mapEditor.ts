@@ -79,7 +79,7 @@ export default class MapEditor {
   ghostTileRotate = (pressed: boolean) => {
     if (pressed) {
       this.ghostTile.rotate(TILE_ROTATION_INC);
-      this.ghostTile.setPosition(this.ghostTile.getPosition());
+      this.ghostTile.setPosition(this.world.getWorldFromPixel(this.canvas.mouse.getMousePos()));
     }
   };
 

@@ -173,6 +173,8 @@ export default defineComponent({
       if (!mapEditor) return;
 
       mapEditor.importMap();
+      mapName.value = mapEditor.map.name;
+      mapAuthor.value = mapEditor.map.author;
     };
 
     const showExportModal = ref(false);

@@ -12,6 +12,9 @@ import Player from "./player";
 import Scene from "blaze-2d/lib/src/scene";
 import MapEditor from "./mapEditor";
 import GameMap from "./map";
+import Tile from "./tile";
+import LineCollider from "blaze-2d/lib/src/physics/collider/line";
+import RigidBody from "blaze-2d/lib/src/physics/rigidbody";
 
 // setup globals
 declare global {
@@ -237,7 +240,72 @@ export default abstract class Game {
     }
 
     scene.world.addEntities(...map.tiles);
-    scene.physics.addBodies(...map.tiles);
+
+    // merge tile colliders
+    const tiles = [...map.tiles];
+    const mapTiles = map.tiles;
+    map.tiles = tiles;
+
+    const toRight = vec2.create();
+    const toLeft = vec2.create();
+    const temp = vec2.create();
+
+    while (tiles.length > 0) {
+      const t = <Tile>tiles.shift();
+
+      vec2.set(toRight, 1, 0);
+      vec2.rotate(toRight, toRight, vec2.create(), t.getRotation());
+      vec2.negate(toLeft, toRight);
+
+      const stack = [t];
+
+      // find furthest left connected tile
+      let left = t;
+      while (stack.length > 0) {
+        const next = <Tile>stack.pop();
+        const found = map.findTileAt(vec2.add(temp, next.getPosition(), toLeft), next.getRotation());
+
+        if (found) {
+          left = found;
+          stack.push(found);
+
+          const i = tiles.findIndex((tile) => tile === found);
+          tiles.splice(i, 1);
+        }
+      }
+
+      stack.length = 0;
+      stack.push(t);
+
+      // find furthest right connected tile
+      let right = t;
+      while (stack.length > 0) {
+        const next = <Tile>stack.pop();
+        const found = map.findTileAt(vec2.add(temp, next.getPosition(), toRight), next.getRotation());
+
+        if (found) {
+          right = found;
+          stack.push(found);
+
+          const i = tiles.findIndex((tile) => tile === found);
+          tiles.splice(i, 1);
+        }
+      }
+
+      const min = vec2.scaleAndAdd(vec2.create(), left.getPosition(), toLeft, 0.5);
+      const max = vec2.scaleAndAdd(vec2.create(), right.getPosition(), toRight, 0.5);
+
+      const body = new RigidBody(new LineCollider(min, max, TILE_SIZE), 0);
+      body.isStatic = true;
+      body.filter.group = t.filter.group;
+
+      body.setPosition(body.collider.getPosition());
+      body.setRotation(body.collider.getRotation());
+
+      scene.physics.addBody(body);
+    }
+
+    map.tiles = mapTiles;
   }
 
   static unload() {
