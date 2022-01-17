@@ -45,6 +45,8 @@ export default abstract class Game {
     rollRight: "KeyD",
     rollLeft: "KeyA",
     jump: "Space",
+    dashLeft: "KeyA",
+    dashRight: "KeyD",
   };
 
   static init() {

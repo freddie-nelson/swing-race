@@ -12,12 +12,19 @@ import Blaze from "blaze-2d/lib/src/blaze";
 import Ray from "blaze-2d/lib/src/physics/ray";
 import Game from "./game";
 import World from "blaze-2d/lib/src/world";
+import KeyboardHandler, { KeyCallback } from "blaze-2d/lib/src/input/keyboard";
 
 export default class Player {
   ball: Entity;
   followCam = false;
   isOnGround = false;
   rollForce = 3.5;
+
+  dashForce = 600;
+  dashTimeout = 800;
+  dashLastUsed = 0;
+  dashSensitivity = 200;
+  dashTriedKey = "";
 
   barWidth = BALL_RADIUS * 6;
   barHeight = BALL_RADIUS * 1.5;
@@ -99,7 +106,11 @@ export default class Player {
     // WORLD.addEntity(this.rod);
     // WORLD.addEntity(this.anchor);
 
-    if (controls) CANVAS.mouse.addListener(Mouse.LEFT, this.mouseListener);
+    if (controls) {
+      CANVAS.mouse.addListener(Mouse.LEFT, this.mouseListener);
+      CANVAS.keys.addListener(Game.controls.dashLeft, this.dashListener);
+      CANVAS.keys.addListener(Game.controls.dashRight, this.dashListener);
+    }
   }
 
   private addedJumpBar = false;
@@ -116,6 +127,7 @@ export default class Player {
       this.jumpForce = 0;
     }
 
+    // update jump bar
     this.jumpForceEntity.setPosition(
       vec2.fromValues(this.ball.getPosition()[0], this.ball.getPosition()[1] + BALL_RADIUS * 3)
     );
@@ -173,6 +185,41 @@ export default class Player {
       this.ball.applyForce(vec2.fromValues(0, this.jumpForce));
       this.jumpForce = 0;
     }
+  }
+
+  private lastDashPressed = false;
+  private lastDashPressTime = 0;
+
+  private dashListener: KeyCallback = (pressed, e) => {
+    if (
+      pressed &&
+      this.dashTriedKey === e.code &&
+      performance.now() - this.lastDashPressTime < this.dashSensitivity
+    ) {
+      this.dash(e.code === Game.controls.dashLeft ? -1 : 1);
+      this.dashTriedKey = "";
+      this.lastDashPressTime = 0;
+    } else if (this.lastDashPressed && !pressed) {
+      this.dashTriedKey = e.code;
+      this.lastDashPressTime = performance.now();
+    }
+
+    this.lastDashPressed = pressed;
+  };
+
+  private dash(dir = 1) {
+    if (performance.now() - this.dashLastUsed < this.dashTimeout) return;
+
+    // stop ball on x axis if it is travelling in opposite direction of dash
+    const dirV = vec2.fromValues(dir, 0);
+    if (vec2.dot(dirV, this.ball.velocity)) {
+      this.ball.velocity[0] = 0;
+    }
+
+    const force = vec2.fromValues(this.dashForce * dir, 0);
+    this.ball.applyForce(force);
+
+    this.dashLastUsed = performance.now();
   }
 
   trailListener = (delta: number) => {
@@ -242,7 +289,6 @@ export default class Player {
     if (angle > this.grappleBoostAngle) {
       if (!this.exitedBoostAngle) {
         this.timesBoosted++;
-        console.log(this.timesBoosted);
       }
 
       this.exitedBoostAngle = true;
