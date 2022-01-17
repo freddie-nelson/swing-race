@@ -216,7 +216,7 @@ export default abstract class Game {
 
     world.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
     world.useBatchRenderer = true;
-    physics.setGravity(vec2.fromValues(0, -9));
+    physics.setGravity(vec2.fromValues(0, -11));
   }
 
   static loadMapEditor() {

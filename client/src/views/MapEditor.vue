@@ -169,12 +169,14 @@ export default defineComponent({
       mapEditor.ghostTile.setPosition(mapEditor.ghostTile.getPosition());
     });
 
-    const importMap = () => {
+    const importMap = async () => {
       if (!mapEditor) return;
 
       mapEditor.importMap();
       mapName.value = mapEditor.map.name;
       mapAuthor.value = mapEditor.map.author;
+
+      if (mapEditor.playTesting) playTest();
     };
 
     const showExportModal = ref(false);

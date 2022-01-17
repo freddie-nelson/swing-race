@@ -17,7 +17,7 @@ export default class Player {
   ball: Entity;
   followCam = false;
   isOnGround = false;
-  rollForce = 2.5;
+  rollForce = 3.5;
 
   barWidth = BALL_RADIUS * 6;
   barHeight = BALL_RADIUS * 1.5;
@@ -36,8 +36,9 @@ export default class Player {
   anchor: Entity;
   rod: Entity;
   grapple: DistanceConstraint | undefined;
-  grappleBoost = 20;
-  maxGrappleBoost = 50;
+  grappleBoostAngle = Math.PI / 2;
+  grappleBoost = 1.5;
+  timesBoosted = 0;
 
   maxVelocity = 30;
 
@@ -219,8 +220,50 @@ export default class Player {
     if (this.grapple) {
       const line = <Line>this.rod.getPieces()[0];
       line.setEnd(this.ball.getPosition());
+
+      this.calculateGrappleBoost();
     }
   };
+
+  exitedBoostAngle = false;
+
+  private calculateGrappleBoost() {
+    if (!this.grapple) {
+      this.exitedBoostAngle = false;
+      return;
+    }
+
+    const p1 = this.ball.getPosition();
+    const p2 = this.grapple.point;
+
+    // angle between 2 points in radians
+    let angle = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]); // angle goes from 0 to 180 along -y quadrants
+    angle = Math.abs(angle - Math.PI / 2); // angle goes from 90 through 0 to 90 along -y quadrants
+    if (angle > this.grappleBoostAngle) {
+      if (!this.exitedBoostAngle) {
+        this.timesBoosted++;
+        console.log(this.timesBoosted);
+      }
+
+      this.exitedBoostAngle = true;
+      return;
+    } else {
+      this.exitedBoostAngle = false;
+    }
+
+    const swingPower = 1 - angle / (Math.PI / 2);
+
+    // find boost direction
+    const diff = vec2.sub(vec2.create(), p1, p2);
+    const left = vec2.fromValues(-1, 0);
+
+    let dir = Math.sign(vec2.dot(this.ball.velocity, left));
+    if (dir === 0) dir = 1;
+
+    const perp = cross2DWithScalar(vec2.create(), diff, dir);
+    vec2.scale(perp, perp, (this.grappleBoost * swingPower) / this.timesBoosted ** 2);
+    this.ball.applyForce(perp);
+  }
 
   mouseListener = (pressed: boolean, pos: vec2) => {
     if (pressed && !this.grapple) {
@@ -238,7 +281,7 @@ export default class Player {
       if (dir === 0) dir = 1;
 
       const perp = cross2DWithScalar(vec2.create(), diff, dir);
-      vec2.scale(perp, perp, Math.min(this.grappleBoost * Math.sqrt(dist), this.maxGrappleBoost));
+      vec2.scale(perp, perp, this.grappleBoost * 5);
       this.ball.applyForce(perp);
 
       const line = <Line>this.rod.getPieces()[0];
@@ -247,6 +290,8 @@ export default class Player {
 
       this.grapple = new DistanceConstraint(this.ball, world, dist);
       this.physics.addConstraint(this.grapple);
+
+      this.timesBoosted = 1;
     } else if (this.grapple) {
       this.world.removeEntity(this.anchor);
       this.world.removeEntity(this.rod);
