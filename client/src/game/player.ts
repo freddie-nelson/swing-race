@@ -18,9 +18,10 @@ export default class Player {
   ball: Entity;
   followCam = false;
   isOnGround = false;
-  rollForce = 3.5;
+  rollForce = 3.8;
+  ballForcePoint = vec2.fromValues(0, BALL_RADIUS / 2);
 
-  dashForce = 600;
+  dashForce = 700;
   dashTimeout = 800;
   dashLastUsed = 0;
   dashSensitivity = 200;
@@ -44,8 +45,9 @@ export default class Player {
   rod: Entity;
   grapple: DistanceConstraint | undefined;
   grappleBoostAngle = Math.PI / 2;
-  grappleBoost = 1.5;
-  timesBoosted = 0;
+  grappleBoost = 1.7;
+  grappleLowVelBoost = 0.1;
+  grappleLowVelCap = 4;
 
   maxVelocity = 30;
 
@@ -63,8 +65,8 @@ export default class Player {
     this.ball = new Entity(vec2.create(), new CircleCollider(BALL_RADIUS), [ballCircle], BALL_MASS);
     this.ball.setInertia(BALL_MASS / 8);
     this.ball.setZIndex(1);
-    this.ball.airFriction = 0.05;
-    this.ball.angularDamping = 0.003;
+    this.ball.airFriction = 0.7;
+    this.ball.angularDamping = 0.002;
     this.ball.addEventListener("update", this.ballListener);
 
     this.jumpForceBar = new Rect(this.barWidth, this.barHeight);
@@ -175,7 +177,7 @@ export default class Player {
       force[0] += this.rollForce;
     }
 
-    this.ball.applyForce(force);
+    this.ball.applyForce(force, this.ballForcePoint);
 
     // jump
     if (keys.isPressed(Game.controls.jump)) {
@@ -212,12 +214,12 @@ export default class Player {
 
     // stop ball on x axis if it is travelling in opposite direction of dash
     const dirV = vec2.fromValues(dir, 0);
-    if (vec2.dot(dirV, this.ball.velocity)) {
+    if (vec2.dot(dirV, this.ball.velocity) < 0) {
       this.ball.velocity[0] = 0;
     }
 
     const force = vec2.fromValues(this.dashForce * dir, 0);
-    this.ball.applyForce(force);
+    this.ball.applyForce(force, this.ballForcePoint);
 
     this.dashLastUsed = performance.now();
   }
@@ -272,11 +274,12 @@ export default class Player {
     }
   };
 
-  exitedBoostAngle = false;
+  private lastAngle = 0;
+  private totalAngleSwung = 0;
 
   private calculateGrappleBoost() {
     if (!this.grapple) {
-      this.exitedBoostAngle = false;
+      this.totalAngleSwung = 0;
       return;
     }
 
@@ -287,14 +290,13 @@ export default class Player {
     let angle = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]); // angle goes from 0 to 180 along -y quadrants
     angle = Math.abs(angle - Math.PI / 2); // angle goes from 90 through 0 to 90 along -y quadrants
     if (angle > this.grappleBoostAngle) {
-      if (!this.exitedBoostAngle) {
-        this.timesBoosted++;
-      }
-
-      this.exitedBoostAngle = true;
+      this.lastAngle = angle;
       return;
     } else {
-      this.exitedBoostAngle = false;
+      const diff = Math.abs(angle - this.lastAngle);
+      if (diff < 0.2) this.totalAngleSwung += diff; // account for change in angle at x axis from atan2
+
+      this.lastAngle = angle;
     }
 
     const swingPower = 1 - angle / (Math.PI / 2);
@@ -306,8 +308,13 @@ export default class Player {
     let dir = Math.sign(vec2.dot(this.ball.velocity, left));
     if (dir === 0) dir = 1;
 
+    const multipleLoopsFactor = Math.ceil(this.totalAngleSwung / (this.grappleBoostAngle * 2)) ** 3;
+
+    const vel = vec2.len(this.ball.velocity);
+    const boost = vel < this.grappleLowVelCap ? this.grappleLowVelBoost : this.grappleBoost;
+
     const perp = cross2DWithScalar(vec2.create(), diff, dir);
-    vec2.scale(perp, perp, (this.grappleBoost * swingPower) / this.timesBoosted ** 2);
+    vec2.scale(perp, perp, (boost * swingPower) / (multipleLoopsFactor || 1));
     this.ball.applyForce(perp);
   }
 
@@ -336,8 +343,7 @@ export default class Player {
 
       this.grapple = new DistanceConstraint(this.ball, world, dist);
       this.physics.addConstraint(this.grapple);
-
-      this.timesBoosted = 1;
+      this.totalAngleSwung = 0;
     } else if (this.grapple) {
       this.world.removeEntity(this.anchor);
       this.world.removeEntity(this.rod);
