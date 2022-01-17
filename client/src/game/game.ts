@@ -134,7 +134,7 @@ export default abstract class Game {
         yellow: new Texture(new Color("#FEFE00")),
       };
 
-      const trailOpacity = "CC";
+      const trailOpacity = "FF";
       const trails: { [index: string]: Texture } = {
         blue: new Texture(new Color("#0061FF" + trailOpacity)),
         cyan: new Texture(new Color("#01FEEE" + trailOpacity)),
@@ -216,7 +216,7 @@ export default abstract class Game {
 
     world.cellSize = vec2.fromValues(32 * CELL_SCALE, 32 * CELL_SCALE);
     world.useBatchRenderer = true;
-    physics.setGravity(vec2.fromValues(0, -12));
+    physics.setGravity(vec2.fromValues(0, -9));
   }
 
   static loadMapEditor() {

@@ -30,7 +30,8 @@ export default class Player {
   maxJumpForce = 700;
 
   trail: Entity;
-  trailLength = 14;
+  trailLength = 20;
+  trailMaxDist = 0.15;
 
   anchor: Entity;
   rod: Entity;
@@ -55,6 +56,7 @@ export default class Player {
     this.ball.setInertia(BALL_MASS / 8);
     this.ball.setZIndex(1);
     this.ball.airFriction = 0.05;
+    this.ball.angularDamping = 0.003;
     this.ball.addEventListener("update", this.ballListener);
 
     this.jumpForceBar = new Rect(this.barWidth, this.barHeight);
@@ -70,13 +72,15 @@ export default class Player {
     this.jumpForceEntity.setZIndex(1);
 
     this.trail = new Entity(vec2.create(), new CircleCollider(0));
+    const trailDiff = 1 / this.trailLength / 2;
+
     for (let i = 1; i <= this.trailLength; i++) {
-      const trailSize = BALL_RADIUS * (1 - i * 0.05);
+      const trailSize = BALL_RADIUS * (1 - i * trailDiff);
       const circle = new Circle(trailSize);
       circle.texture = this.getTrailTexture();
       this.trail.addPiece(circle);
     }
-    this.trail.addEventListener("update", this.trailListener);
+    this.trail.addEventListener("fixedUpdate", this.trailListener);
 
     const anchorCircle = new Rect(BALL_RADIUS, BALL_RADIUS);
     anchorCircle.texture = this.getAnchorTexture();
@@ -172,8 +176,18 @@ export default class Player {
 
   trailListener = (delta: number) => {
     const pieces = <Circle[]>[...this.trail.getPieces()];
+
+    // move pieces
+    for (let i = pieces.length - 1; i > 0; i--) {
+      const piece = pieces[i];
+      const next = pieces[i - 1];
+
+      piece.setPosition(next.getPosition());
+    }
+
+    // update head
     const head = pieces[0];
-    const spacing = Math.min(BALL_RADIUS / 3, vec2.len(this.ball.velocity) / 10);
+    const spacing = Math.min(BALL_RADIUS / 3, vec2.len(this.ball.velocity) / (this.trailLength * 2));
 
     const dir = vec2.normalize(vec2.create(), this.ball.velocity);
     vec2.negate(dir, dir);
@@ -181,13 +195,23 @@ export default class Player {
     head.setPosition(this.ball.getPosition());
     head.translate(vec2.scale(vec2.create(), dir, spacing));
 
-    for (let i = pieces.length - 1; i > 0; i--) {
+    // cap distance between pieces
+    for (let i = pieces.length - 2; i >= 0; i--) {
       const piece = pieces[i];
-      const next = pieces[i - 1];
+      const last = pieces[i + 1];
 
-      const dist = vec2.dist(piece.getPosition(), next.getPosition());
+      let dist = vec2.dist(piece.getPosition(), last.getPosition());
+      dist -= this.trailMaxDist;
 
-      if (dist > spacing) piece.setPosition(next.getPosition());
+      if (dist > 0) {
+        const dir = vec2.sub(vec2.create(), piece.getPosition(), last.getPosition());
+        vec2.normalize(dir, dir);
+        vec2.scale(dir, dir, dist);
+
+        for (let j = i + 1; j < pieces.length; j++) {
+          pieces[j].translate(dir);
+        }
+      }
     }
   };
 
