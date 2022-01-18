@@ -5,8 +5,15 @@ import Texture from "blaze-2d/lib/src/texture/texture";
 import { vec2 } from "gl-matrix";
 import Game from "./game";
 
+export interface TileMaterial {
+  restitution: number;
+  sf: number;
+  df: number;
+}
+
 export default class Tile extends Entity {
   type: string;
+  material: TileMaterial;
 
   constructor(pos: vec2, rot: number, type: string) {
     super(pos, new RectCollider(TILE_SIZE, TILE_SIZE), [], TILE_MASS, "tile");
@@ -16,6 +23,16 @@ export default class Tile extends Entity {
     this.type = type;
     this.isStatic = true;
     this.filter.group = 12;
+
+    const materialMap = Object.keys(TILE_TYPE_MATERIALS);
+    const materialKey = TILE_TYPE_MATERIALS[materialMap[materialMap.findIndex((m) => type.startsWith(m))]];
+
+    const material = TILE_MATERIALS[materialKey];
+    this.material = material;
+
+    this.restitution = material.restitution;
+    this.staticFriction = material.sf;
+    this.dynamicFriction = material.df;
 
     const rect = new Rect(TILE_SIZE + TILE_SLOP, TILE_SIZE + TILE_SLOP);
     rect.texture = TEXTURES[type];

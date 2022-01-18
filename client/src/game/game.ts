@@ -12,7 +12,7 @@ import Player from "./player";
 import Scene from "blaze-2d/lib/src/scene";
 import MapEditor from "./mapEditor";
 import GameMap from "./map";
-import Tile from "./tile";
+import Tile, { TileMaterial } from "./tile";
 import LineCollider from "blaze-2d/lib/src/physics/collider/line";
 import RigidBody from "blaze-2d/lib/src/physics/rigidbody";
 
@@ -30,6 +30,8 @@ declare global {
 
   var TILE_TYPES: string[];
   var TILE_IMAGES: string[];
+  var TILE_MATERIALS: { [index: string]: TileMaterial };
+  var TILE_TYPE_MATERIALS: { [index: string]: string };
 
   var TILE_SIZE: number;
   var TILE_SLOP: number;
@@ -87,6 +89,20 @@ export default abstract class Game {
       "log-cross",
       "log-end",
     ];
+
+    globalThis.TILE_MATERIALS = {
+      solid: {
+        restitution: 0.3,
+        sf: 0.1,
+        df: 0.5,
+      },
+    };
+
+    // [start of tile]: material name
+    globalThis.TILE_TYPE_MATERIALS = {
+      border: "solid",
+      log: "solid",
+    };
 
     globalThis.TILE_SIZE = 1;
     globalThis.TILE_SLOP = 0.01;
@@ -267,7 +283,7 @@ export default abstract class Game {
         const next = <Tile>stack.pop();
         const found = map.findTileAt(vec2.add(temp, next.getPosition(), toLeft), next.getRotation());
 
-        if (found) {
+        if (found && next.material === found.material) {
           left = found;
           stack.push(found);
 
@@ -285,7 +301,7 @@ export default abstract class Game {
         const next = <Tile>stack.pop();
         const found = map.findTileAt(vec2.add(temp, next.getPosition(), toRight), next.getRotation());
 
-        if (found) {
+        if (found && next.material === found.material) {
           right = found;
           stack.push(found);
 
@@ -300,6 +316,10 @@ export default abstract class Game {
       const body = new RigidBody(new LineCollider(min, max, TILE_SIZE), 0);
       body.isStatic = true;
       body.filter.group = t.filter.group;
+
+      body.restitution = t.material.restitution;
+      body.staticFriction = t.material.sf;
+      body.dynamicFriction = t.material.df;
 
       body.setPosition(body.collider.getPosition());
       body.setRotation(body.collider.getRotation());

@@ -67,6 +67,7 @@ export default class Player {
     this.ball.setZIndex(1);
     this.ball.airFriction = 0.7;
     this.ball.angularDamping = 0.002;
+    this.ball.restitution = 1;
     this.ball.addEventListener("update", this.ballListener);
 
     this.jumpForceBar = new Rect(this.barWidth, this.barHeight);
