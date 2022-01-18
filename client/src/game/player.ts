@@ -13,6 +13,7 @@ import Ray from "blaze-2d/lib/src/physics/ray";
 import Game from "./game";
 import World from "blaze-2d/lib/src/world";
 import KeyboardHandler, { KeyCallback } from "blaze-2d/lib/src/input/keyboard";
+import { TouchCallback } from "blaze-2d/lib/src/input/touch";
 
 export default class Player {
   ball: Entity;
@@ -111,6 +112,8 @@ export default class Player {
 
     if (controls) {
       CANVAS.mouse.addListener(Mouse.LEFT, this.mouseListener);
+      CANVAS.touch.addListener("tap", this.touchListener);
+
       CANVAS.keys.addListener(Game.controls.dashLeft, this.dashListener);
       CANVAS.keys.addListener(Game.controls.dashRight, this.dashListener);
     }
@@ -118,7 +121,7 @@ export default class Player {
 
   private addedJumpBar = false;
 
-  ballListener = (delta: number) => {
+  private ballListener = (delta: number) => {
     if (this.followCam) this.world.getCamera().setPosition(this.ball.getPosition());
 
     this.capVelocity();
@@ -225,7 +228,7 @@ export default class Player {
     this.dashLastUsed = performance.now();
   }
 
-  trailListener = (delta: number) => {
+  private trailListener = (delta: number) => {
     const pieces = <Circle[]>[...this.trail.getPieces()];
 
     // move pieces
@@ -266,7 +269,7 @@ export default class Player {
     }
   };
 
-  rodListener = () => {
+  private rodListener = () => {
     if (this.grapple) {
       const line = <Line>this.rod.getPieces()[0];
       line.setEnd(this.ball.getPosition());
@@ -319,7 +322,7 @@ export default class Player {
     this.ball.applyForce(perp);
   }
 
-  mouseListener = (pressed: boolean, pos: vec2) => {
+  private mouseListener = (pressed: boolean, pos: vec2) => {
     if (pressed && !this.grapple) {
       const world = this.world.getWorldFromPixel(pos);
 
@@ -352,6 +355,16 @@ export default class Player {
       this.physics.removeConstraint(this.grapple);
       this.grapple = undefined;
     }
+  };
+
+  private touchListener: TouchCallback = (touch, e) => {
+    if (this.grapple) return;
+
+    touch.addListener("release", (touch) => {
+      this.mouseListener(false, touch.pos);
+    });
+
+    this.mouseListener(true, touch.pos);
   };
 
   setColor(color: string) {
